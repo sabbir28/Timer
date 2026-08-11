@@ -1,0 +1,14 @@
+# Timer420 Code Ownership Policy
+
+# Core Timer Engine & State Machine
+/src/core/                 @Timer420/core-maintainers
+
+# Platform Integration
+/src/platform/             @Timer420/platform-maintainers
+
+# UI & Renderers
+/src/ui/                   @Timer420/ui-maintainers
+
+# Documentation & CI
+/docs/                     @Timer420/doc-maintainers
+/.github/                  @Timer420/devops-maintainers

@@ -1,0 +1,5 @@
+D:/Progect/Timer420/build/CMakeFiles/Timer420.dir
+D:/Progect/Timer420/build/CMakeFiles/timer420_tests.dir
+D:/Progect/Timer420/build/CMakeFiles/test.dir
+D:/Progect/Timer420/build/CMakeFiles/edit_cache.dir
+D:/Progect/Timer420/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,24 @@
+name: Run Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -B build -S .
+
+    - name: Build Test Suite
+      run: cmake --build build --config Release
+
+    - name: Run CTest Unit Tests
+      run: ctest --test-dir build --output-on-failure

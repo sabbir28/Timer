@@ -1,5 +1,12 @@
 title: "Timer420 — Professional Windows Work Timer Overlay"
-description: "High-performance, non-intrusive, transparent desktop work timer for Windows built in C11 with Win32 API."
-theme: jekyll-theme-cayman
-show_downloads: true
-google_analytics:
+description: "High-performance, non-intrusive, transparent desktop work timer for Windows 10 & 11 built in pure C11 with Win32 API."
+permalink: /:basename/
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "page"

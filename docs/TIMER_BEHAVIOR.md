@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Timer Behavior"
+permalink: /timer-behavior.html
+---
+
 # Timer Behavior Specification - LastMoment / Timer420
 
 ## 1. Current Prototype Behavior Analysis

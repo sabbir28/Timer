@@ -1,0 +1,50 @@
+<nav class="acrylic-card p-4 space-y-1">
+    <div class="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-white/10 mb-2">
+        <i class="fa-solid fa-book mr-2 text-[#00BCD4]"></i>Documentation Navigation
+    </div>
+    <a href="{{ '/user-guide.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/user-guide.html' or page.url == '/user-guide/' %}active{% endif %}">
+        <i class="fa-solid fa-book-open text-xs w-4"></i> User Guide
+    </a>
+    <a href="{{ '/architecture.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/architecture.html' or page.url == '/architecture/' %}active{% endif %}">
+        <i class="fa-solid fa-sitemap text-xs w-4"></i> Architecture
+    </a>
+    <a href="{{ '/building.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/building.html' or page.url == '/building/' %}active{% endif %}">
+        <i class="fa-solid fa-hammer text-xs w-4"></i> Building & Tools
+    </a>
+    <a href="{{ '/configuration.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/configuration.html' or page.url == '/configuration/' %}active{% endif %}">
+        <i class="fa-solid fa-sliders text-xs w-4"></i> Configuration
+    </a>
+    <a href="{{ '/testing.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/testing.html' or page.url == '/testing/' %}active{% endif %}">
+        <i class="fa-solid fa-vial text-xs w-4"></i> Testing Strategy
+    </a>
+    <a href="{{ '/timer-behavior.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/timer-behavior.html' or page.url == '/timer-behavior/' %}active{% endif %}">
+        <i class="fa-solid fa-clock text-xs w-4"></i> Timer Behavior
+    </a>
+    <a href="{{ '/release-process.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/release-process.html' or page.url == '/release-process/' %}active{% endif %}">
+        <i class="fa-solid fa-rocket text-xs w-4"></i> Release Process
+    </a>
+    <a href="{{ '/migration-plan.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/migration-plan.html' or page.url == '/migration-plan/' %}active{% endif %}">
+        <i class="fa-solid fa-route text-xs w-4"></i> Migration Plan
+    </a>
+    <a href="{{ '/development.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/development.html' or page.url == '/development/' %}active{% endif %}">
+        <i class="fa-solid fa-code text-xs w-4"></i> Development
+    </a>
+    <a href="{{ '/architecture-analysis.html' | relative_url }}"
+        class="sidebar-link {% if page.url == '/architecture-analysis.html' or page.url == '/architecture-analysis/' %}active{% endif %}">
+        <i class="fa-solid fa-magnifying-glass-chart text-xs w-4"></i> Arch Analysis
+    </a>
+    <div class="pt-3 mt-3 border-t border-white/10">
+        <a href="{{ '/' | relative_url }}" class="sidebar-link text-gray-400 hover:text-white">
+            <i class="fa-solid fa-arrow-left text-xs w-4"></i> Back to Overview
+        </a>
+    </div>
+</nav>

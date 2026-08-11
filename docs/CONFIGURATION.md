@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Configuration Reference"
+permalink: /configuration.html
+---
+
 # Timer420 Configuration Reference
 
 Settings are stored in `%APPDATA%\Timer420\timer420.ini`.

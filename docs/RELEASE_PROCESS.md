@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Release Process"
+permalink: /release-process.html
+---
+
 # Release Process
 
 This document details how to package and release Timer420.

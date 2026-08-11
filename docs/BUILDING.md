@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Building & Tools"
+permalink: /building.html
+---
+
 # Building Timer420
 
 This guide explains how to compile Timer420 on Windows using various compiler toolchains and CMake.

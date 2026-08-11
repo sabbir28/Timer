@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Architecture Analysis"
+permalink: /architecture-analysis.html
+---
+
 # Architecture Analysis - LastMoment / Timer420
 
 ## 1. Overview & Current Architecture

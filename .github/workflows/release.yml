@@ -1,0 +1,64 @@
+name: Build & Publish Release Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release Version (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Create Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC & Developer Environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Timer420 Executable
+        run: |
+          cmake --build build --config Release
+
+      - name: Run Automated CTest Suite
+        run: |
+          ctest --test-dir build --output-on-failure -C Release
+
+      - name: Prepare Release Package
+        shell: pwsh
+        run: |
+          $ver = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}" } else { "${{ github.event.inputs.release_version }}" }
+          if (-not $ver) { $ver = "v1.0.0" }
+          
+          New-Item -ItemType Directory -Force -Path release_dist
+          Copy-Item "build/Release/Timer420.exe" -Destination "release_dist/Timer420.exe"
+          Copy-Item "LICENSE" -Destination "release_dist/LICENSE"
+          Copy-Item "README.md" -Destination "release_dist/README.md"
+          
+          Compress-Archive -Path "release_dist/*" -DestinationPath "Timer420-$ver-windows-x64.zip" -Force
+          Copy-Item "build/Release/Timer420.exe" -Destination "Timer420.exe"
+
+      - name: Create GitHub Release and Upload Executable Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Timer420.exe
+            Timer420-*-windows-x64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          name: "Timer420 ${{ github.ref_name }}"

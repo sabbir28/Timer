@@ -1,0 +1,64 @@
+# ==========================================================================
+# Timer420 Git Ignore Rules
+# ==========================================================================
+
+# CMake Build Directories & Output
+build/
+build*/
+out/
+bin/
+obj/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+
+# Binary Output & Intermediate Compiled Files
+*.exe
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.res
+*.idb
+
+# Visual Studio & Windows Toolchain Files
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.ncb
+*.opensdf
+*.sdf
+*.cache
+*.sln.docstates
+
+# IDE & Code Editor Metadata
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+
+# Timer420 Local Configuration & Runtime Logs
+timer420.ini
+*.log
+tmp/
+temp/
+
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+ehthumbs.db

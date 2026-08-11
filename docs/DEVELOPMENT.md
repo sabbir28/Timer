@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Development Guide"
+permalink: /development.html
+---
+
 # Development Guide
 
 ## Codebase Organization

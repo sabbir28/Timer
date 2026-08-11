@@ -1,3 +1,9 @@
+---
+layout: page
+title: "User Guide"
+permalink: /user-guide.html
+---
+
 # Timer420 User Guide
 
 ## Basic Controls

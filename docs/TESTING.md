@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Testing Strategy"
+permalink: /testing.html
+---
+
 # Testing Strategy Guide
 
 Timer420 utilizes a decoupled core architecture allowing 100% unit test coverage of timing logic without waiting for real time.

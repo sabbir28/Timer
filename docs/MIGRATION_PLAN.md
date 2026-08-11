@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Migration Plan"
+permalink: /migration-plan.html
+---
+
 # Migration Plan - Timer420 Codebase Modernization
 
 This document outlines the step-by-step migration plan for transforming the `LastMoment.c` prototype into a modular, production-grade, open-source Windows application.

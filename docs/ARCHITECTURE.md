@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Architecture Guide"
+permalink: /architecture.html
+---
+
 # Timer420 Architecture Guide
 
 ## System Components

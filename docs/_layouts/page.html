@@ -1,0 +1,14 @@
+---
+layout: default
+---
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row gap-8">
+    <aside class="w-full md:w-64 flex-shrink-0">
+        {% include sidebar.html %}
+    </aside>
+    <main class="flex-1 min-w-0">
+        <article class="acrylic-card p-6 sm:p-10 doc-article">
+            {{ content }}
+        </article>
+    </main>
+</div>

@@ -19,6 +19,8 @@
 #define ID_TRAY_MODE_MINIMAL     1010
 #define ID_TRAY_MODE_PROGRESS    1011
 #define ID_TRAY_MODE_EDGE        1012
+#define ID_TRAY_TOGGLE_BREAK     1013
+#define ID_TRAY_TEST_SOUND       1014
 
 typedef struct TrayManager {
     NOTIFYICONDATAW nid;

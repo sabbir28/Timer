@@ -35,6 +35,9 @@ bool tray_manager_init(TrayManager* tray, HWND hwnd)
     AppendMenuW(tray->hTrayMenu, MF_STRING, ID_TRAY_MODE_PROGRESS, L"Mode: Progress");
     AppendMenuW(tray->hTrayMenu, MF_STRING, ID_TRAY_MODE_EDGE,     L"Mode: Edge Border");
     AppendMenuW(tray->hTrayMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(tray->hTrayMenu, MF_STRING, ID_TRAY_TOGGLE_BREAK,  L"☕ Switch Work / Break");
+    AppendMenuW(tray->hTrayMenu, MF_STRING, ID_TRAY_TEST_SOUND,    L"🔊 Test Alarm Sound");
+    AppendMenuW(tray->hTrayMenu, MF_SEPARATOR, 0, NULL);
     AppendMenuW(tray->hTrayMenu, MF_STRING, ID_TRAY_EXIT, L"Exit");
 
     return true;

@@ -8,6 +8,8 @@ build*/
 out/
 bin/
 obj/
+dist/
+*.zip
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

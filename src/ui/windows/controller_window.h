@@ -10,6 +10,7 @@
 #define ID_CTRL_BTN_STARTPAUSE      2001
 #define ID_CTRL_BTN_STOP            2002
 #define ID_CTRL_BTN_RESET           2003
+#define ID_CTRL_BTN_TOGGLE_BREAK    2004
 
 #define ID_CTRL_EDIT_HOURS          2010
 #define ID_CTRL_SPIN_HOURS         2011
@@ -35,6 +36,7 @@
 #define ID_CTRL_CHK_SOUND_ENABLED   2040
 #define ID_CTRL_EDIT_SOUND_PATH     2041
 #define ID_CTRL_BTN_BROWSE_SOUND    2042
+#define ID_CTRL_BTN_TEST_SOUND      2046
 #define ID_CTRL_CHK_TOAST_ENABLED   2043
 #define ID_CTRL_CHK_REPEAT_ENABLED  2044
 #define ID_CTRL_EDIT_REPEAT_COUNT   2045
@@ -80,9 +82,9 @@ void controller_window_set_duration_inputs(ControllerWindow* win, uint32_t total
 void controller_window_set_sync_status(ControllerWindow* win, const wchar_t* status_msg);
 
 /**
- * Synchronizes controls with current timer state and settings.
+ * Synchronizes controls with current timer state, settings, and session mode.
  */
-void controller_window_update_ui(ControllerWindow* win, const TimerEngine* timer, const AppSettings* settings);
+void controller_window_update_ui(ControllerWindow* win, const TimerEngine* timer, const AppSettings* settings, bool is_break);
 
 /**
  * Destroys window resources and fonts.

@@ -46,14 +46,60 @@ static void on_timer_completed_cb(TimerEngine* engine, void* user_data)
     AppController* app = (AppController*)user_data;
     log_write(LOG_LEVEL_INFO, "Timer completed event triggered!");
 
-    if (app->settings.sound_enabled)
+    if (app->is_break)
     {
-        audio_play_completion(app->settings.custom_sound_path);
+        /* Break finished -> switch to work session */
+        app->is_break = false;
+        log_write(LOG_LEVEL_INFO, "Break finished. Switching back to work session.");
+
+        if (app->settings.sound_enabled)
+        {
+            audio_play_completion(app->settings.custom_sound_path);
+        }
+
+        if (app->settings.toast_enabled && app->window.hwnd)
+        {
+            toast_show_notification(app->window.hwnd, L"Timer420 Alert", L"Break finished! Starting work session.");
+        }
+
+        uint32_t dur = app->settings.work_seconds;
+        timer_engine_set_duration(&app->timer, dur);
+        if (app->settings.repeat_enabled)
+        {
+            timer_engine_start(&app->timer);
+            app->deadline_epoch = time(NULL) + dur;
+        }
+    }
+    else
+    {
+        /* Work session finished -> switch to break session */
+        app->is_break = true;
+        log_write(LOG_LEVEL_INFO, "Work session completed. Switching to break session.");
+
+        if (app->settings.sound_enabled)
+        {
+            audio_play_completion(app->settings.custom_sound_path);
+        }
+
+        if (app->settings.toast_enabled && app->window.hwnd)
+        {
+            toast_show_notification(app->window.hwnd, L"Timer420 Alert", L"Work session completed! Starting break.");
+        }
+
+        uint32_t breakDur = app->settings.break_seconds;
+        if (breakDur == 0) breakDur = 300;
+        timer_engine_set_duration(&app->timer, breakDur);
+        if (app->settings.repeat_enabled)
+        {
+            timer_engine_start(&app->timer);
+            app->deadline_epoch = time(NULL) + breakDur;
+        }
     }
 
-    if (app->settings.toast_enabled && app->window.hwnd)
+    if (app->window.hwnd) InvalidateRect(app->window.hwnd, NULL, FALSE);
+    if (app->controller_win.hwnd && app->controller_win.visible)
     {
-        toast_show_notification(app->window.hwnd, L"Timer420 Alert", L"Work session completed! Take a break.");
+        controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
     }
 }
 
@@ -70,7 +116,7 @@ static void on_power_event_cb(PowerEvent event, void* user_data)
         }
         if (app->controller_win.hwnd && app->controller_win.visible)
         {
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
         }
     }
 }
@@ -139,6 +185,18 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
         case ID_CTRL_BTN_RESET:
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
+            break;
+
+        case ID_CTRL_BTN_TOGGLE_BREAK:
+            app->is_break = !app->is_break;
+            {
+                uint32_t dur = app->is_break ? app->settings.break_seconds : app->settings.work_seconds;
+                if (dur == 0) dur = 300;
+                timer_engine_set_duration(&app->timer, dur);
+                timer_engine_reset(&app->timer);
+                app->deadline_epoch = time(NULL) + dur;
+                controller_window_set_duration_inputs(&app->controller_win, dur);
+            }
             break;
 
         case ID_CTRL_BTN_APPLY_TIME: {
@@ -327,6 +385,10 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             break;
         }
 
+        case ID_CTRL_BTN_TEST_SOUND:
+            audio_play_completion(app->settings.custom_sound_path);
+            break;
+
         case ID_CTRL_BTN_CLOSE:
             controller_window_set_visible(&app->controller_win, false);
             break;
@@ -339,7 +401,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
         if (handled)
         {
             if (app->window.hwnd) InvalidateRect(app->window.hwnd, NULL, FALSE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
         }
         return 0;
     }
@@ -392,7 +454,7 @@ bool app_controller_init(AppController* app, HINSTANCE hInstance)
 
     /* Show Control Center on launch */
     controller_window_set_visible(&app->controller_win, true);
-    controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+    controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
 
     log_write(LOG_LEVEL_INFO, "Timer420 initialized successfully.");
     return true;
@@ -420,7 +482,7 @@ static void paint_overlay_window(AppController* app, HWND hwnd)
     params.remaining_seconds = remSec;
     params.total_seconds = app->timer.duration_seconds;
     params.progress = timer_engine_get_progress(&app->timer);
-    params.is_break = false;
+    params.is_break = app->is_break;
     params.is_running = (app->timer.state == TIMER_STATE_RUNNING);
     params.font_huge = app->window.font_huge;
     params.font_normal = app->window.font_normal;
@@ -494,7 +556,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
         }
         if (app->controller_win.hwnd && app->controller_win.visible)
         {
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
         }
         return 0;
 
@@ -527,7 +589,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             InvalidateRect(hwnd, NULL, TRUE);
             if (app->controller_win.hwnd && app->controller_win.visible)
             {
-                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             }
             break;
         case HOTKEY_ID_RESET:
@@ -536,7 +598,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             InvalidateRect(hwnd, NULL, TRUE);
             if (app->controller_win.hwnd && app->controller_win.visible)
             {
-                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             }
             break;
         }
@@ -552,7 +614,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             controller_window_set_visible(&app->controller_win, !app->controller_win.visible);
             if (app->controller_win.visible)
             {
-                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             }
         }
         return 0;
@@ -562,7 +624,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
         {
         case ID_TRAY_OPEN_CONTROLLER:
             controller_window_set_visible(&app->controller_win, true);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
 
         case ID_TRAY_EXIT:
@@ -577,67 +639,87 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             else
                 timer_engine_start(&app->timer);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_RESET:
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_SET_2H:
+            app->is_break = false;
             timer_engine_set_duration(&app->timer, 2 * 3600);
             app->settings.work_seconds = 2 * 3600;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
             controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_SET_1H:
+            app->is_break = false;
             timer_engine_set_duration(&app->timer, 1 * 3600);
             app->settings.work_seconds = 1 * 3600;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
             controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_SET_30M:
+            app->is_break = false;
             timer_engine_set_duration(&app->timer, 30 * 60);
             app->settings.work_seconds = 30 * 60;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
             controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_SET_15M:
+            app->is_break = false;
             timer_engine_set_duration(&app->timer, 15 * 60);
             app->settings.work_seconds = 15 * 60;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
             controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_MODE_MINIMAL:
             app->settings.mode = OVERLAY_MODE_MINIMAL;
             settings_save(&app->settings, NULL);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_MODE_PROGRESS:
             app->settings.mode = OVERLAY_MODE_PROGRESS;
             settings_save(&app->settings, NULL);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
         case ID_TRAY_MODE_EDGE:
             app->settings.mode = OVERLAY_MODE_EDGE;
             settings_save(&app->settings, NULL);
             InvalidateRect(hwnd, NULL, TRUE);
-            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings);
+            controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
+            break;
+        case ID_TRAY_TOGGLE_BREAK:
+            app->is_break = !app->is_break;
+            {
+                uint32_t dur = app->is_break ? app->settings.break_seconds : app->settings.work_seconds;
+                if (dur == 0) dur = 300;
+                timer_engine_set_duration(&app->timer, dur);
+                timer_engine_reset(&app->timer);
+                app->deadline_epoch = time(NULL) + dur;
+                controller_window_set_duration_inputs(&app->controller_win, dur);
+                InvalidateRect(hwnd, NULL, TRUE);
+                controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
+            }
+            break;
+        case ID_TRAY_TEST_SOUND:
+            audio_play_completion(app->settings.custom_sound_path);
             break;
         }
         return 0;

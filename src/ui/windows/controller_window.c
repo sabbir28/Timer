@@ -87,20 +87,25 @@ static void create_controls(HWND hwnd, ControllerWindow* win)
     SendMessageW(g_hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 
     /* Action Buttons */
-    HWND hBtnStart = CreateWindowExW(0, L"BUTTON", L"▶ Start / ⏸ Pause",
+    HWND hBtnStart = CreateWindowExW(0, L"BUTTON", L"▶ Start/Pause",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        15, 125, 150, 34, hwnd, (HMENU)ID_CTRL_BTN_STARTPAUSE, hInst, NULL);
+        15, 125, 115, 34, hwnd, (HMENU)ID_CTRL_BTN_STARTPAUSE, hInst, NULL);
     SendMessageW(hBtnStart, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
     HWND hBtnStop = CreateWindowExW(0, L"BUTTON", L"⏹ Stop",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        175, 125, 150, 34, hwnd, (HMENU)ID_CTRL_BTN_STOP, hInst, NULL);
+        135, 125, 115, 34, hwnd, (HMENU)ID_CTRL_BTN_STOP, hInst, NULL);
     SendMessageW(hBtnStop, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
     HWND hBtnReset = CreateWindowExW(0, L"BUTTON", L"↺ Reset",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        335, 125, 155, 34, hwnd, (HMENU)ID_CTRL_BTN_RESET, hInst, NULL);
+        255, 125, 115, 34, hwnd, (HMENU)ID_CTRL_BTN_RESET, hInst, NULL);
     SendMessageW(hBtnReset, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
+
+    HWND hBtnBreak = CreateWindowExW(0, L"BUTTON", L"☕ Work/Break",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        375, 125, 115, 34, hwnd, (HMENU)ID_CTRL_BTN_TOGGLE_BREAK, hInst, NULL);
+    SendMessageW(hBtnBreak, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
     /* 2. Custom Duration Group */
     HWND hGrp2 = CreateWindowExW(0, L"BUTTON", L" Custom Timer Duration ",
@@ -217,13 +222,15 @@ static void create_controls(HWND hwnd, ControllerWindow* win)
     HWND hGrp5 = CreateWindowExW(0, L"BUTTON", L" Audio & Notifications ", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 15, 670, 475, 110, hwnd, NULL, hInst, NULL);
     SendMessageW(hGrp5, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
-    g_hChkSound = CreateWindowExW(0, L"BUTTON", L"Play Alarm Sound on Completion", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 30, 695, 230, 22, hwnd, (HMENU)ID_CTRL_CHK_SOUND_ENABLED, hInst, NULL);
+    g_hChkSound = CreateWindowExW(0, L"BUTTON", L"Play Alarm Sound", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 30, 695, 150, 22, hwnd, (HMENU)ID_CTRL_CHK_SOUND_ENABLED, hInst, NULL);
     SendMessageW(g_hChkSound, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
-    g_hEditSoundPath = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 260, 695, 140, 24, hwnd, (HMENU)ID_CTRL_EDIT_SOUND_PATH, hInst, NULL);
+    g_hEditSoundPath = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 185, 694, 150, 24, hwnd, (HMENU)ID_CTRL_EDIT_SOUND_PATH, hInst, NULL);
     SendMessageW(g_hEditSoundPath, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
-    HWND hBtnBrowseSound = CreateWindowExW(0, L"BUTTON", L"Browse...", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 405, 694, 70, 26, hwnd, (HMENU)ID_CTRL_BTN_BROWSE_SOUND, hInst, NULL);
+    HWND hBtnBrowseSound = CreateWindowExW(0, L"BUTTON", L"Browse...", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 340, 693, 70, 26, hwnd, (HMENU)ID_CTRL_BTN_BROWSE_SOUND, hInst, NULL);
     SendMessageW(hBtnBrowseSound, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
+    HWND hBtnTestSound = CreateWindowExW(0, L"BUTTON", L"🔊 Test", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 415, 693, 65, 26, hwnd, (HMENU)ID_CTRL_BTN_TEST_SOUND, hInst, NULL);
+    SendMessageW(hBtnTestSound, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
 
     g_hChkToast = CreateWindowExW(0, L"BUTTON", L"Show Windows Notification Toast", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 30, 725, 240, 22, hwnd, (HMENU)ID_CTRL_CHK_TOAST_ENABLED, hInst, NULL);
     SendMessageW(g_hChkToast, WM_SETFONT, (WPARAM)win->font_ui, TRUE);
@@ -312,7 +319,7 @@ void controller_window_set_sync_status(ControllerWindow* win, const wchar_t* sta
     }
 }
 
-void controller_window_update_ui(ControllerWindow* win, const TimerEngine* timer, const AppSettings* settings)
+void controller_window_update_ui(ControllerWindow* win, const TimerEngine* timer, const AppSettings* settings, bool is_break)
 {
     if (!win || !win->hwnd || !IsWindow(win->hwnd) || !timer || !settings) return;
     if (s_is_updating_ui) return;
@@ -338,6 +345,17 @@ void controller_window_update_ui(ControllerWindow* win, const TimerEngine* timer
         if (settings->live_clock_mode)
         {
             stateStr = L"🇧🇩 LIVE BST";
+        }
+        else if (is_break)
+        {
+            switch (timer->state)
+            {
+            case TIMER_STATE_RUNNING:   stateStr = L"☕ BREAK RUNNING"; break;
+            case TIMER_STATE_PAUSED:    stateStr = L"☕ BREAK PAUSED"; break;
+            case TIMER_STATE_COMPLETED: stateStr = L"☕ BREAK DONE"; break;
+            case TIMER_STATE_STOPPED:
+            default:                    stateStr = L"☕ BREAK STOPPED"; break;
+            }
         }
         else
         {

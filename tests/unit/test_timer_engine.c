@@ -23,6 +23,7 @@ void test_timer_engine(void)
     /* 2 hours = 7200 seconds */
     bool ok = timer_engine_set_duration(&engine, 7200);
     assert(ok);
+    (void)ok;
     assert(engine.duration_seconds == 7200);
     assert(engine.remaining_ms == 7200000ULL);
 

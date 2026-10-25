@@ -1,6 +1,7 @@
 # Timer420 — Professional Windows Work Timer Overlay
 
-[![Build & Test](https://github.com/Timer420/Timer420/actions/workflows/build.yml/badge.svg)](https://github.com/Timer420/Timer420/actions)
+[![Build & Test](https://github.com/sabbir28/Timer/actions/workflows/build.yml/badge.svg)](https://github.com/sabbir28/Timer/actions)
+[![Release](https://github.com/sabbir28/Timer/actions/workflows/release.yml/badge.svg)](https://github.com/sabbir28/Timer/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg)](https://microsoft.com/windows)
 
@@ -11,19 +12,21 @@
 ## 🌟 Key Features
 
 - ⏱️ **Monotonic High-Precision Clock**: Powered by `QueryPerformanceCounter`, avoiding wall-clock NTP time drift, DST jumps, or manual system time adjustments.
+- ☕ **Work / Break Alternating Cycles (2026 Update)**: Seamless Pomodoro-style alternating sessions with automatic cycle transitions, custom break duration, and dedicated switch buttons.
 - 🎨 **3 Transparent Overlay Modes**:
   - **Minimal Mode**: Clean, elegant typography displaying remaining time and target deadline.
   - **Progress Mode**: Minimal layout + horizontal progress bar with percentage readout.
-  - **Edge Border Mode**: Subtle 6px perimeter line tracing your screen boundary as time elapses.
+  - **Edge Border Mode**: Subtle perimeter line tracing your screen boundary as time elapses.
 - 🔄 **Auto-Repeating Timer**: Configurable multi-cycle or infinite `∞` work sessions.
 - 🌙 **Windows Sleep / Resume Recovery**: Listens to system power state notifications (`WM_POWERBROADCAST`), auto-synchronizing elapsed time upon computer wake.
-- 🔔 **Rich Alerts**: Windows Notification Toast balloons and audible completion chimes.
+- 🔔 **Rich Alerts & Live Sound Preview**: Windows Notification Toast balloons, custom `.wav` alarm chime selector with instant live preview (`🔊 Test Sound`).
 - 💾 **Settings Persistence**: Saves mode choices, custom durations, and preferences in `%APPDATA%\Timer420\timer420.ini`.
 - ⌨️ **Safe Global Hotkeys**:
   - `Ctrl + Shift + Space`: Toggle overlay visibility
   - `Ctrl + Shift + S`: Start / Pause timer
   - `Ctrl + Shift + R`: Reset timer
 - 🧪 **100% Testable Engine**: Includes `FakeClock` mock suite capable of running 2-hour duration tests in under 1 millisecond.
+- 🚀 **Automated CI/CD Releases**: Automatic GitHub Releases with pre-compiled Windows x64 binaries, zip packages, and checksums triggered on git tags.
 
 ---
 
@@ -49,7 +52,7 @@ Detailed technical documentation is available in [`docs/ARCHITECTURE.md`](docs/A
 
 ### Installation
 
-1. Download the latest release `.zip` from the [Releases](https://github.com/Timer420/Timer420/releases) page.
+1. Download the latest release `.zip` from the [Releases](https://github.com/sabbir28/Timer/releases) page.
 2. Extract `Timer420.exe` to your preferred directory.
 3. Run `Timer420.exe`. The timer icon will appear in your Windows System Tray.
 
@@ -58,7 +61,7 @@ Detailed technical documentation is available in [`docs/ARCHITECTURE.md`](docs/A
 ## 🛠️ Building from Source
 
 ### Prerequisites
-- **Compiler**: MSVC (Visual Studio 2019/2022) or MinGW-w64 (GCC 11+) / Clang
+- **Compiler**: MSVC (Visual Studio 2019/2022/2026) or MinGW-w64 (GCC 11+) / Clang
 - **Build System**: [CMake](https://cmake.org/) v3.20+
 - **Platform**: Windows 7 / 10 / 11
 
@@ -66,8 +69,8 @@ Detailed technical documentation is available in [`docs/ARCHITECTURE.md`](docs/A
 
 ```cmd
 # Clone repository
-git clone https://github.com/Timer420/Timer420.git
-cd Timer420
+git clone https://github.com/sabbir28/Timer.git
+cd Timer
 
 # Generate build files
 cmake -B build -S .

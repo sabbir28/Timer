@@ -42,15 +42,25 @@ jobs:
         shell: pwsh
         run: |
           $ver = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}" } else { "${{ github.event.inputs.release_version }}" }
-          if (-not $ver) { $ver = "v1.0.0" }
+          if (-not $ver) { $ver = "v0.2.0" }
           
           New-Item -ItemType Directory -Force -Path release_dist
-          Copy-Item "build/Release/Timer420.exe" -Destination "release_dist/Timer420.exe"
+          $exe = if (Test-Path "build/Release/Timer420.exe") {
+              "build/Release/Timer420.exe"
+          } elseif (Test-Path "build/Timer420.exe") {
+              "build/Timer420.exe"
+          } else {
+              (Get-ChildItem -Path "build" -Filter "Timer420.exe" -Recurse | Select-Object -ExpandProperty FullName -First 1)
+          }
+          if (-not $exe -or -not (Test-Path $exe)) { throw "Timer420.exe not found in build directory" }
+
+          Copy-Item $exe -Destination "release_dist/Timer420.exe"
           Copy-Item "LICENSE" -Destination "release_dist/LICENSE"
           Copy-Item "README.md" -Destination "release_dist/README.md"
+          if (Test-Path "CHANGELOG.md") { Copy-Item "CHANGELOG.md" -Destination "release_dist/CHANGELOG.md" }
           
           Compress-Archive -Path "release_dist/*" -DestinationPath "Timer420-$ver-windows-x64.zip" -Force
-          Copy-Item "build/Release/Timer420.exe" -Destination "Timer420.exe"
+          Copy-Item $exe -Destination "Timer420.exe"
 
       - name: Create GitHub Release and Upload Executable Assets
         uses: softprops/action-gh-release@v2
@@ -61,4 +71,5 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          name: "Timer420 ${{ github.ref_name }}"
+          name: "Timer420 ${{ github.ref_name || github.event.inputs.release_version }}"
+          tag_name: "${{ github.ref_name || github.event.inputs.release_version }}"

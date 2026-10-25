@@ -42,6 +42,7 @@ bool settings_load(AppSettings* settings, const wchar_t* ini_path)
     settings->repeat_count = GetPrivateProfileIntW(L"Timer", L"RepeatCount", 0, ini_path);
 
     settings->sound_enabled = GetPrivateProfileIntW(L"Audio", L"SoundEnabled", 1, ini_path) != 0;
+    GetPrivateProfileStringW(L"Audio", L"CustomSoundPath", L"", settings->custom_sound_path, 260, ini_path);
     settings->toast_enabled = GetPrivateProfileIntW(L"Notifications", L"ToastEnabled", 1, ini_path) != 0;
     settings->always_on_top = GetPrivateProfileIntW(L"Window", L"AlwaysOnTop", 1, ini_path) != 0;
 
@@ -90,6 +91,7 @@ bool settings_save(const AppSettings* settings, const wchar_t* ini_path)
 
     swprintf(val, 64, L"%d", settings->sound_enabled ? 1 : 0);
     WritePrivateProfileStringW(L"Audio", L"SoundEnabled", val, ini_path);
+    WritePrivateProfileStringW(L"Audio", L"CustomSoundPath", settings->custom_sound_path, ini_path);
 
     swprintf(val, 64, L"%d", settings->toast_enabled ? 1 : 0);
     WritePrivateProfileStringW(L"Notifications", L"ToastEnabled", val, ini_path);

@@ -31,10 +31,12 @@ This document outlines the development roadmap for Timer420.
 
 ## Phase 5 — Advanced Features (Future Target Releases)
 
-### Planned for v0.2.0:
-- [ ] Customizable sound file picker in tray menu.
-- [ ] Custom break duration timer (work/break alternating cycles).
-- [ ] Preset manager (save custom timer durations).
+### Completed in v0.2.0 (2026 Update):
+- [x] Customizable sound file picker in tray menu & Control Center.
+- [x] Custom break duration timer (work/break alternating cycles).
+- [x] Preset manager & custom duration persistence.
+- [x] Live sound preview alert testing.
+- [x] Automated GitHub Actions multi-environment release packaging.
 
 ### Planned for v1.0.0:
 - [ ] Multi-monitor edge border overlay option.

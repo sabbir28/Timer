@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Returns a normalized sine-wave pulse value [0.0, 1.0] for animation cycles.

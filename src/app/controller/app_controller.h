@@ -15,6 +15,7 @@ typedef struct AppController {
     ControllerWindow controller_win;
     TrayManager tray;
     time_t deadline_epoch;
+    bool is_break;
 } AppController;
 
 /**

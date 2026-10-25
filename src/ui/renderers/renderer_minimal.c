@@ -20,28 +20,43 @@ void render_minimal(HDC hdc, const RenderParams* params)
     int h = params->client_rect.bottom - params->client_rect.top;
     int centerY = h / 2;
 
-    /* Background Fill */
+    /* 1. Deep 2026 Glassmorphic Dark Fill */
     HBRUSH bgBrush = CreateSolidBrush(params->palette.background_color);
     FillRect(hdc, &params->client_rect, bgBrush);
     DeleteObject(bgBrush);
 
+    /* 2. Sleek 2026 Ambient Outer Border with Breathing Glow */
+    COLORREF glowBorder = animator_glow_color(params->palette.accent_color, 0.25f + params->breathing_factor * 0.25f);
+    HPEN borderPen = CreatePen(PS_SOLID, 1, glowBorder);
+    HPEN oldPen = (HPEN)SelectObject(hdc, borderPen);
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+    RoundRect(hdc, 2, 2, w - 2, h - 2, 16, 16);
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(borderPen);
+
     COLORREF mainColor = params->palette.text_color;
     COLORREF accentColor = params->palette.accent_color;
 
-    /* Low-time animation pulse (< 60s) */
+    /* Low-time animation pulse (< 60s) or organic breathing */
     if (!params->is_live_clock && params->remaining_seconds > 0 && params->remaining_seconds <= 60)
     {
-        mainColor = animator_interpolate_color(mainColor, RGB(255, 60, 60), params->pulse_factor);
+        mainColor = animator_interpolate_color(mainColor, RGB(255, 68, 68), params->pulse_factor);
     }
     else if (params->is_live_clock)
     {
-        accentColor = animator_interpolate_color(accentColor, RGB(255, 255, 255), params->pulse_factor * 0.3f);
+        accentColor = animator_glow_color(accentColor, 0.8f + params->breathing_factor * 0.4f);
+    }
+    else
+    {
+        /* Subtle 2026 organic text glow breathing */
+        mainColor = animator_glow_color(mainColor, 0.9f + params->breathing_factor * 0.2f);
     }
 
     if (params->is_live_clock)
     {
         RECT headerRc = { 0, centerY - 110, w, centerY - 80 };
-        draw_centered_text(hdc, &headerRc, L"BANGLADESH LIVE CLOCK (BST)", params->font_small, accentColor);
+        draw_centered_text(hdc, &headerRc, L"🇧🇩 BANGLADESH STANDARD TIME (BST)", params->font_small, accentColor);
 
         RECT timeRc = { 0, centerY - 65, w, centerY + 25 };
         draw_centered_text(hdc, &timeRc, params->time_str, params->font_huge, mainColor);
@@ -54,33 +69,37 @@ void render_minimal(HDC hdc, const RenderParams* params)
         return;
     }
 
-    RECT timeRc = { 0, centerY - 80, w, centerY + 20 };
+    /* Break Session Badge Pill */
+    if (params->is_break)
+    {
+        COLORREF breakGlow = animator_glow_color(RGB(52, 211, 153), 0.7f + params->breathing_factor * 0.3f);
+        RECT brRc = { 0, centerY - 120, w, centerY - 88 };
+        draw_centered_text(hdc, &brRc, L"☕ BREAK SESSION ACTIVE", params->font_normal, breakGlow);
+    }
+
+    RECT timeRc = { 0, centerY - 75, w, centerY + 25 };
     draw_centered_text(hdc, &timeRc, params->time_str, params->font_huge, mainColor);
 
     if (params->remaining_seconds == 0)
     {
-        RECT msgRc = { 0, centerY + 30, w, centerY + 80 };
-        draw_centered_text(hdc, &msgRc, L"TIME'S UP", params->font_normal, RGB(255, 80, 80));
+        COLORREF alertColor = animator_interpolate_color(RGB(255, 80, 80), RGB(255, 220, 220), params->breathing_factor);
+        RECT msgRc = { 0, centerY + 32, w, centerY + 80 };
+        draw_centered_text(hdc, &msgRc, L"⚡ SESSION FINISHED", params->font_normal, alertColor);
     }
     else if (params->remaining_seconds <= 600 && !params->is_break)
     {
-        RECT msgRc = { 0, centerY + 30, w, centerY + 80 };
-        draw_centered_text(hdc, &msgRc, L"LAST 10 MINUTES", params->font_normal, accentColor);
+        COLORREF warnColor = animator_glow_color(RGB(251, 191, 36), 0.8f + params->breathing_factor * 0.3f);
+        RECT msgRc = { 0, centerY + 32, w, centerY + 80 };
+        draw_centered_text(hdc, &msgRc, L"⏳ FINAL 10 MINUTES", params->font_normal, warnColor);
     }
     else
     {
-        RECT remRc = { 0, centerY + 25, w, centerY + 60 };
-        draw_centered_text(hdc, &remRc, L"REMAINING", params->font_small, accentColor);
+        RECT remRc = { 0, centerY + 28, w, centerY + 62 };
+        draw_centered_text(hdc, &remRc, L"FOCUS FLOW REMAINING", params->font_small, accentColor);
 
-        RECT dlRc = { 0, centerY + 110, w, centerY + 150 };
+        RECT dlRc = { 0, centerY + 105, w, centerY + 145 };
         wchar_t dlFull[64];
-        swprintf(dlFull, 64, L"DEADLINE  %s", params->deadline_str);
+        swprintf(dlFull, 64, L"TARGET  %s", params->deadline_str);
         draw_centered_text(hdc, &dlRc, dlFull, params->font_small, params->palette.text_color);
-    }
-
-    if (params->is_break)
-    {
-        RECT brRc = { 0, centerY - 120, w, centerY - 90 };
-        draw_centered_text(hdc, &brRc, L"BREAK", params->font_normal, RGB(100, 200, 140));
     }
 }

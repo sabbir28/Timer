@@ -95,6 +95,7 @@ target_link_libraries(Timer420 PRIVATE
     comdlg32
     winmm
     winhttp
+    dwmapi
 )
 
 if(MINGW OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -110,18 +111,21 @@ set(TEST_SOURCES
     tests/unit/test_timer_engine.c
     tests/unit/test_timer_state.c
     tests/unit/test_settings.c
+    tests/unit/test_animator.c
     tests/test_runner.c
 )
 
 add_executable(timer420_tests
     ${CORE_SOURCES}
     ${SERVICE_SOURCES}
+    src/ui/animation/animator.c
     ${TEST_SOURCES}
 )
 
 target_link_libraries(timer420_tests PRIVATE
     winmm
     winhttp
+    gdi32
 )
 
 add_test(NAME Timer420UnitTestSuite COMMAND timer420_tests)

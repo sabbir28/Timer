@@ -1,4 +1,5 @@
 #include "ui/renderers/renderer.h"
+#include "ui/animation/animator.h"
 
 #ifndef min
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -19,9 +20,23 @@ void render_edge(HDC hdc, const RenderParams* params)
     if (elapsedProgress < 0.0f) elapsedProgress = 0.0f;
     if (elapsedProgress > 1.0f) elapsedProgress = 1.0f;
 
+    /* Dynamic 2026 Color Palette */
     COLORREF mainColor = params->palette.accent_color;
+    if (params->is_break)
+    {
+        mainColor = animator_interpolate_color(RGB(16, 185, 129), RGB(52, 211, 153), params->breathing_factor);
+    }
+    else if (params->remaining_seconds <= 60)
+    {
+        mainColor = animator_interpolate_color(RGB(239, 68, 68), RGB(255, 120, 120), params->pulse_factor);
+    }
+    else
+    {
+        mainColor = animator_interpolate_color(mainColor, RGB(56, 189, 248), params->breathing_factor * 0.35f);
+    }
 
-    HPEN dimPen = CreatePen(PS_SOLID, borderThickness, RGB(35, 40, 50));
+    /* 1. Subtle Perimeter Track */
+    HPEN dimPen = CreatePen(PS_SOLID, borderThickness, RGB(26, 34, 48));
     HPEN oldPen = (HPEN)SelectObject(hdc, dimPen);
     HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
 
@@ -31,6 +46,28 @@ void render_edge(HDC hdc, const RenderParams* params)
               w - borderThickness / 2,
               h - borderThickness / 2);
 
+    /* 2. 2026 Cyber HUD Corner Brackets (High-Tech Accents) */
+    int bracketLen = 24;
+    COLORREF bracketCol = animator_glow_color(mainColor, 0.4f * params->breathing_factor);
+    HPEN bracketPen = CreatePen(PS_SOLID, borderThickness + 2, bracketCol);
+    SelectObject(hdc, bracketPen);
+
+    /* Top-Left */
+    MoveToEx(hdc, 0, borderThickness, NULL); LineTo(hdc, bracketLen, borderThickness);
+    MoveToEx(hdc, borderThickness, 0, NULL); LineTo(hdc, borderThickness, bracketLen);
+    /* Top-Right */
+    MoveToEx(hdc, w - bracketLen, borderThickness, NULL); LineTo(hdc, w, borderThickness);
+    MoveToEx(hdc, w - borderThickness, 0, NULL); LineTo(hdc, w - borderThickness, bracketLen);
+    /* Bottom-Right */
+    MoveToEx(hdc, w - bracketLen, h - borderThickness, NULL); LineTo(hdc, w, h - borderThickness);
+    MoveToEx(hdc, w - borderThickness, h - bracketLen, NULL); LineTo(hdc, w - borderThickness, h);
+    /* Bottom-Left */
+    MoveToEx(hdc, 0, h - borderThickness, NULL); LineTo(hdc, bracketLen, h - borderThickness);
+    MoveToEx(hdc, borderThickness, h - bracketLen, NULL); LineTo(hdc, borderThickness, h);
+
+    DeleteObject(bracketPen);
+
+    /* 3. Active Elapsed Progress Border */
     int totalLen = 2 * (w + h);
     int filled   = (int)(totalLen * elapsedProgress);
 

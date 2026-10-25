@@ -4,6 +4,7 @@ extern void test_clock(void);
 extern void test_timer_state(void);
 extern void test_timer_engine(void);
 extern void test_settings(void);
+extern void test_animator(void);
 
 int main(void)
 {
@@ -15,6 +16,7 @@ int main(void)
     test_timer_state();
     test_timer_engine();
     test_settings();
+    test_animator();
 
     printf("\n========================================\n");
     printf(" ALL UNIT TESTS PASSED SUCCESSFULLY!\n");

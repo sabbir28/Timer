@@ -18,6 +18,10 @@
 #define ID_CTRL_SPIN_MINS          2013
 #define ID_CTRL_EDIT_SECS           2014
 #define ID_CTRL_SPIN_SECS          2015
+#define ID_CTRL_EDIT_BREAK_MINS     2017
+#define ID_CTRL_SPIN_BREAK_MINS     2018
+#define ID_CTRL_EDIT_BREAK_SECS     2019
+#define ID_CTRL_SPIN_BREAK_SECS     2026
 #define ID_CTRL_BTN_APPLY_TIME      2016
 
 #define ID_CTRL_BTN_PRESET_15M      2020
@@ -26,6 +30,11 @@
 #define ID_CTRL_BTN_PRESET_45M      2023
 #define ID_CTRL_BTN_PRESET_1H       2024
 #define ID_CTRL_BTN_PRESET_2H       2025
+
+#define ID_CTRL_BTN_PRESET_POMODORO 2080
+#define ID_CTRL_BTN_PRESET_DEEP     2081
+#define ID_CTRL_BTN_PRESET_SPRINT   2082
+#define ID_CTRL_BTN_PRESET_FLOW     2083
 
 #define ID_CTRL_RADIO_MINIMAL       2030
 #define ID_CTRL_RADIO_PROGRESS      2031
@@ -58,6 +67,9 @@ typedef struct ControllerWindow {
     HFONT font_title;
     HFONT font_time;
     HFONT font_ui;
+    HBRUSH brush_bg;
+    HBRUSH brush_card;
+    HBRUSH brush_edit;
     bool visible;
 } ControllerWindow;
 
@@ -72,9 +84,9 @@ bool controller_window_create(ControllerWindow* win, HINSTANCE hInstance, WNDPRO
 void controller_window_set_visible(ControllerWindow* win, bool visible);
 
 /**
- * Explicitly populates the Hours, Minutes, and Seconds edit fields.
+ * Explicitly populates the Work and Break duration inputs.
  */
-void controller_window_set_duration_inputs(ControllerWindow* win, uint32_t total_seconds);
+void controller_window_set_duration_inputs(ControllerWindow* win, uint32_t work_seconds, uint32_t break_seconds);
 
 /**
  * Updates the sync status text label in the GUI.

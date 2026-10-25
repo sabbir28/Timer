@@ -15,7 +15,9 @@ typedef struct RenderParams {
     bool is_break;
     bool is_running;
     bool is_live_clock;
-    float pulse_factor; /* 0.0 to 1.0 for animations */
+    float pulse_factor;     /* 0.0 to 1.0 for animations */
+    float breathing_factor; /* 0.0 to 1.0 organic respiratory curve */
+    float shimmer_phase;    /* 0.0 to 1.0 travelling neon wave */
     ColorPalette palette;
     wchar_t time_str[32];
     wchar_t deadline_str[32];

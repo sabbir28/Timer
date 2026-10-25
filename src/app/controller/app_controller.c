@@ -143,6 +143,40 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
 
     switch (msg)
     {
+    case WM_ERASEBKGND:
+    {
+        HDC hdc = (HDC)wParam;
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        FillRect(hdc, &rc, app->controller_win.brush_bg);
+        return 1;
+    }
+
+    case WM_CTLCOLORSTATIC:
+    {
+        HDC hdc = (HDC)wParam;
+        SetTextColor(hdc, RGB(226, 232, 240)); /* Light Slate Text */
+        SetBkMode(hdc, TRANSPARENT);
+        return (INT_PTR)app->controller_win.brush_bg;
+    }
+
+    case WM_CTLCOLOREDIT:
+    {
+        HDC hdc = (HDC)wParam;
+        SetTextColor(hdc, RGB(248, 250, 252)); /* Crisp White Text */
+        SetBkColor(hdc, RGB(30, 41, 59));      /* Slate 800 background */
+        return (INT_PTR)app->controller_win.brush_edit;
+    }
+
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORDLG:
+    {
+        HDC hdc = (HDC)wParam;
+        SetTextColor(hdc, RGB(226, 232, 240));
+        SetBkColor(hdc, RGB(15, 23, 42));
+        return (INT_PTR)app->controller_win.brush_bg;
+    }
+
     case WM_COMMAND:
     {
         WORD code = HIWORD(wParam);
@@ -195,30 +229,42 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
                 timer_engine_set_duration(&app->timer, dur);
                 timer_engine_reset(&app->timer);
                 app->deadline_epoch = time(NULL) + dur;
-                controller_window_set_duration_inputs(&app->controller_win, dur);
+                controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             }
             break;
 
         case ID_CTRL_BTN_APPLY_TIME: {
             wchar_t hBuf[16] = {0}, mBuf[16] = {0}, sBuf[16] = {0}, rBuf[16] = {0};
+            wchar_t bmBuf[16] = {0}, bsBuf[16] = {0};
             GetDlgItemTextW(hwnd, ID_CTRL_EDIT_HOURS, hBuf, 16);
             GetDlgItemTextW(hwnd, ID_CTRL_EDIT_MINS, mBuf, 16);
             GetDlgItemTextW(hwnd, ID_CTRL_EDIT_SECS, sBuf, 16);
+            GetDlgItemTextW(hwnd, ID_CTRL_EDIT_BREAK_MINS, bmBuf, 16);
+            GetDlgItemTextW(hwnd, ID_CTRL_EDIT_BREAK_SECS, bsBuf, 16);
             GetDlgItemTextW(hwnd, ID_CTRL_EDIT_REPEAT_COUNT, rBuf, 16);
             uint32_t h = (uint32_t)_wtoi(hBuf);
             uint32_t m = (uint32_t)_wtoi(mBuf);
             uint32_t s = (uint32_t)_wtoi(sBuf);
+            uint32_t bm = (uint32_t)_wtoi(bmBuf);
+            uint32_t bs = (uint32_t)_wtoi(bsBuf);
             uint32_t rep = (uint32_t)_wtoi(rBuf);
             uint32_t totalSec = h * 3600 + m * 60 + s;
+            uint32_t breakSec = bm * 60 + bs;
+            if (breakSec == 0) breakSec = 300;
+            app->settings.break_seconds = breakSec;
+
             if (totalSec > 0)
             {
                 app->settings.work_seconds = totalSec;
                 app->settings.repeat_count = rep;
-                timer_engine_set_duration(&app->timer, totalSec);
-                timer_engine_reset(&app->timer);
-                app->deadline_epoch = time(NULL) + totalSec;
+                if (!app->is_break)
+                {
+                    timer_engine_set_duration(&app->timer, totalSec);
+                    timer_engine_reset(&app->timer);
+                    app->deadline_epoch = time(NULL) + totalSec;
+                }
                 settings_save(&app->settings, NULL);
-                controller_window_set_duration_inputs(&app->controller_win, totalSec);
+                controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             }
             break;
         }
@@ -229,7 +275,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_BTN_PRESET_25M:
@@ -238,7 +284,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_BTN_PRESET_30M:
@@ -247,7 +293,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_BTN_PRESET_45M:
@@ -256,7 +302,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_BTN_PRESET_1H:
@@ -265,7 +311,7 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_BTN_PRESET_2H:
@@ -274,7 +320,52 @@ static LRESULT CALLBACK controller_window_wndproc(HWND hwnd, UINT msg, WPARAM wP
             timer_engine_reset(&app->timer);
             app->deadline_epoch = time(NULL) + app->settings.work_seconds;
             settings_save(&app->settings, NULL);
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
+            break;
+
+        /* Modern 2026 1-Click Productivity Flow Templates */
+        case ID_CTRL_BTN_PRESET_POMODORO:
+            app->settings.work_seconds = 25 * 60;
+            app->settings.break_seconds = 5 * 60;
+            app->is_break = false;
+            timer_engine_set_duration(&app->timer, app->settings.work_seconds);
+            timer_engine_reset(&app->timer);
+            app->deadline_epoch = time(NULL) + app->settings.work_seconds;
+            settings_save(&app->settings, NULL);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
+            break;
+
+        case ID_CTRL_BTN_PRESET_DEEP:
+            app->settings.work_seconds = 50 * 60;
+            app->settings.break_seconds = 10 * 60;
+            app->is_break = false;
+            timer_engine_set_duration(&app->timer, app->settings.work_seconds);
+            timer_engine_reset(&app->timer);
+            app->deadline_epoch = time(NULL) + app->settings.work_seconds;
+            settings_save(&app->settings, NULL);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
+            break;
+
+        case ID_CTRL_BTN_PRESET_SPRINT:
+            app->settings.work_seconds = 90 * 60;
+            app->settings.break_seconds = 15 * 60;
+            app->is_break = false;
+            timer_engine_set_duration(&app->timer, app->settings.work_seconds);
+            timer_engine_reset(&app->timer);
+            app->deadline_epoch = time(NULL) + app->settings.work_seconds;
+            settings_save(&app->settings, NULL);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
+            break;
+
+        case ID_CTRL_BTN_PRESET_FLOW:
+            app->settings.work_seconds = 120 * 60;
+            app->settings.break_seconds = 20 * 60;
+            app->is_break = false;
+            timer_engine_set_duration(&app->timer, app->settings.work_seconds);
+            timer_engine_reset(&app->timer);
+            app->deadline_epoch = time(NULL) + app->settings.work_seconds;
+            settings_save(&app->settings, NULL);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             break;
 
         case ID_CTRL_RADIO_TIMER_MODE:
@@ -449,8 +540,8 @@ bool app_controller_init(AppController* app, HINSTANCE hInstance)
     SetTimer(app->window.hwnd, 1, 250, NULL);
     app->deadline_epoch = time(NULL) + app->settings.work_seconds;
 
-    /* Populate duration inputs with initial work_seconds setting */
-    controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+    /* Populate duration inputs with initial work_seconds & break_seconds setting */
+    controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
 
     /* Show Control Center on launch */
     controller_window_set_visible(&app->controller_win, true);
@@ -488,8 +579,10 @@ static void paint_overlay_window(AppController* app, HWND hwnd)
     params.font_normal = app->window.font_normal;
     params.font_small = app->window.font_small;
 
-    /* Calculate Animation Pulse */
+    /* 2026 High-Tech Animation Modulation */
     params.pulse_factor = animator_get_pulse(1200);
+    params.breathing_factor = animator_get_breathing(3000);
+    params.shimmer_phase = animator_get_shimmer_phase(2400);
 
     /* AI Palette Evaluation */
     if (app->settings.theme_preset == 0)
@@ -653,7 +746,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             app->settings.work_seconds = 2 * 3600;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
             controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
@@ -663,7 +756,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             app->settings.work_seconds = 1 * 3600;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
             controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
@@ -673,7 +766,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             app->settings.work_seconds = 30 * 60;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
             controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
@@ -683,7 +776,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
             app->settings.work_seconds = 15 * 60;
             settings_save(&app->settings, NULL);
             app->deadline_epoch = time(NULL) + app->timer.duration_seconds;
-            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds);
+            controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
             InvalidateRect(hwnd, NULL, TRUE);
             controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             break;
@@ -713,7 +806,7 @@ LRESULT CALLBACK app_controller_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                 timer_engine_set_duration(&app->timer, dur);
                 timer_engine_reset(&app->timer);
                 app->deadline_epoch = time(NULL) + dur;
-                controller_window_set_duration_inputs(&app->controller_win, dur);
+                controller_window_set_duration_inputs(&app->controller_win, app->settings.work_seconds, app->settings.break_seconds);
                 InvalidateRect(hwnd, NULL, TRUE);
                 controller_window_update_ui(&app->controller_win, &app->timer, &app->settings, app->is_break);
             }

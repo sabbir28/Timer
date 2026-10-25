@@ -5,6 +5,24 @@ All notable changes to the Timer420 project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-10-25
+
+### Added
+- **2026 Era Fluid Animation Engine**:
+  - Organic sinusoidal breathing curves (`animator_get_breathing`) for live ambient pulsing.
+  - Travelling neon shimmer sweeps (`animator_get_shimmer_phase`) across active progress indicators.
+  - Dynamic glow color synthesis (`animator_glow_color`) and smooth easing functions (`animator_ease_out_cubic`, `animator_ease_in_out_sine`).
+  - Unit test suite coverage for 2026 animator curves and color interpolations (`tests/unit/test_animator.c`).
+- **Modernized 2026 Dark Mode Admin Panel (Control Center)**:
+  - Windows 11 / 2026 Immersive Dark Mode Titlebar (`DwmSetWindowAttribute` with `DWMWA_USE_IMMERSIVE_DARK_MODE`).
+  - Deep Obsidian Slate theme styling (`#0F172A` background, `#182032` card containers, `#1E293B` input fields) with automatic GDI brush management.
+  - Configurable **Break Duration** inputs (minutes and seconds) integrated into duration controls and settings persistence.
+  - **1-Click Productivity Flow Templates**: Quick setup buttons for `🍅 25/5 Pomodoro`, `⚡ 50/10 Focus`, `🚀 90/15 Sprint`, and `🧘 2h/20m Flow`.
+- **Rebuilt 2026 Visual Renderers**:
+  - `renderer_progress.c`: Rounded obsidian pill track, dynamic glow bar, travelling neon photon shimmer sweep, and modern percentage badge.
+  - `renderer_edge.c`: Cyber HUD corner bracket overlays, animated photon trail sweeping the screen boundary, and organic breathing borders.
+  - `renderer_minimal.c`: Ambient glassmorphic breathing glow border, emerald break badge pill, and refined typographic hierarchy.
+
 ## [0.2.0] - 2026-10-25
 
 ### Added
